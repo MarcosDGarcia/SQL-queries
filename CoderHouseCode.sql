@@ -36,7 +36,7 @@ from Staff t1 inner join Encargado t2 on t1.Encargado=t2.Encargado_ID inner join
 inner join Area t4 on t3.Area=t4.AreaID
 group by t1.Documento, t1.Nombre, t1.Apellido, t1.[Fecha Ingreso], t2.Nombre, t2.Telefono, t3.Nombre, t3.Jornada, t4.Nombre
 having datediff (month,t1.[Fecha Ingreso], getdate())>=3 order by meses_ingreso desc
---datediff meses: month suma los años de diferencia con x12 para pasarlos a meses--
+--datediff meses: month suma los aï¿½os de diferencia con x12 para pasarlos a meses--
 --se pueden hacer joins uno seguido al otro siempre con su correspondiente on y la condicion--
 --where va antes de group by, having va despues de group by--
 
@@ -64,7 +64,7 @@ where Camada=(select min(Camada) from Staff) or (year([Fecha Ingreso])=2021 and 
 order by NumCamada desc
 
 --2--
-select count ([Fecha Ingreso])IngresosFecha, year([Fecha Ingreso])Año, month([Fecha Ingreso])Mes, day([Fecha Ingreso])Dia from Estudiantes
+select count ([Fecha Ingreso])IngresosFecha, year([Fecha Ingreso])Aï¿½o, month([Fecha Ingreso])Mes, day([Fecha Ingreso])Dia from Estudiantes
 group by [Fecha Ingreso] order by IngresosFecha desc
 
 --3--
@@ -108,5 +108,3 @@ order by Camada desc
 select t1.Nombre, t1.Tipo, t1.Jornada, count (t1.Area)Cant_Areas, count (t1.AsignaturasID)Cant_Asig
 from Asignaturas t1 inner join Staff t2 on t1.AsignaturasID=t2.Asignatura
 where t2.Asignatura is null group by t1.Nombre, t1.Tipo, t1.Jornada
-
---4--
