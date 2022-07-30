@@ -1,4 +1,4 @@
-
+use AdventureWorks2019 exec sp_changedbowner 'sa'
 -- Excercises from https://www.linkedin.com/pulse/ejercicios-sql-server-rocio-lopez/?originalSubdomain=es
 -- 1
 select
@@ -250,3 +250,57 @@ from
 	Person.Person t1
 inner join
 	Person.Password t2 on t1.BusinessEntityID=t2.BusinessEntityID
+
+-- End of excercises
+
+-- Subqueries excercises
+
+-- 1
+
+select t1.FirstName, t1.LastName, t2.SickLeaveHours
+from HumanResources.vEmployeeDepartment t1
+inner join HumanResources.Employee t2 on t1.BusinessEntityID = t2.BusinessEntityID
+where t2.SickLeaveHours >=
+	(select avg(SickLeaveHours)
+	from HumanResources.Employee)
+
+-- 2
+
+select t3.FirstName, t3.LastName, t2.ShiftID
+from
+	HumanResources.Employee t1
+inner join
+	HumanResources.EmployeeDepartmentHistory t2 on t1.BusinessEntityID = t2.BusinessEntityID
+inner join
+	HumanResources.vEmployeeDepartment t3 on t2.BusinessEntityID = t3.BusinessEntityID
+where
+	t2.BusinessEntityID in (
+	select
+		BusinessEntityID
+	from
+		HumanResources.EmployeeDepartmentHistory
+	where
+		ShiftID = 3)
+
+-- 3
+
+select * from Sales.SpecialOfferProduct where ProductID = 801
+
+select
+	t1.ProductID, t1.ProductNumber, t1.Name, count(t2.ProductID) Times
+from
+	Production.Product t1
+inner join
+	Sales.SpecialOfferProduct t2 on t1.ProductID=t2.ProductID
+where
+	t1.ProductID in (
+	select
+		ProductID
+	from
+		Sales.SpecialOfferProduct
+	)
+group by
+	t2.ProductID, t1.ProductID, t1.ProductNumber, t1.Name
+
+
+	
