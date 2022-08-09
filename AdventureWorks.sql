@@ -255,7 +255,7 @@ inner join
 
 -- Subqueries excercises
 
--- 1
+-- 1 -- Most Sick Employees
 
 select t1.FirstName, t1.LastName, t2.SickLeaveHours
 from HumanResources.vEmployeeDepartment t1
@@ -264,7 +264,7 @@ where t2.SickLeaveHours >=
 	(select avg(SickLeaveHours)
 	from HumanResources.Employee)
 
--- 2
+-- 2 -- Employees of the Shift 3
 
 select t3.FirstName, t3.LastName, t2.ShiftID
 from
@@ -282,7 +282,7 @@ where
 	where
 		ShiftID = 3)
 
--- 3
+-- 3 -- Most Promoted Products
 
 select * from Sales.SpecialOfferProduct where ProductID = 801
 
@@ -302,5 +302,82 @@ where
 group by
 	t2.ProductID, t1.ProductID, t1.ProductNumber, t1.Name
 
+-- 4 -- Best Selled Products
 
-	
+select
+	t1.ProductID, t1.Name, t1.ProductNumber
+from
+	Production.Product t1
+where
+	t1.ProductID in (
+		select
+			ProductID
+		from
+			Sales.SalesOrderDetail
+		group by
+			ProductID
+		having
+			count(ProductID)>500)
+
+-- 5 -- Seniority of Customers
+
+select
+	*,
+case
+	when s1.Counted > 20 then 'Premium'
+	when s1.Counted > 10 then 'Gold'
+	when s1.Counted > 5 then 'Pro'
+end
+	Seniority
+from (
+	select
+		AccountNumber, CustomerID, count(CustomerID) Counted
+	from
+		Sales.SalesOrderHeader
+	group by
+		AccountNumber, CustomerID
+	having
+		count(CustomerID)>5) s1
+
+-- 6 -- Customers list
+
+select * from Person.Person
+
+select
+	FirstName, MiddleName, LastName, BusinessEntityID
+from
+	Person.Person
+where
+	PersonType='IN'
+order by
+	LastName
+
+-- 7 -- Level of Selled Products
+
+select
+	P.Name, P.ProductID, P.ProductNumber, count(P.ProductID) Counted,
+	case
+		when count(SOD.ProductID)>2000 then 5
+		when count(SOD.ProductID)>1000 then 4
+		when count(SOD.ProductID)>500 then 3
+		when count(SOD.ProductID)>250 then 2
+		when count(SOD.ProductID)>100 then 1
+	end LevelProduct
+from
+	Production.Product P
+inner join
+	Sales.SalesOrderDetail SOD on P.ProductID=SOD.ProductID
+where
+	SellEndDate is null and P.ProductID in (
+		select distinct
+			ProductID
+		from
+			Sales.SalesOrderDetail
+		group by
+			ProductID
+		having
+			count(ProductID)>=1)
+group by
+	P.Name, P.ProductID, P.ProductNumber
+
+-- 8 -- 
