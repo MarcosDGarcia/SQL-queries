@@ -1,0 +1,72 @@
+-- Declare a variable to filter for a specific department
+DECLARE @DepartmentFilter VARCHAR(50) = 'Sales';
+
+-- Common Table Expression to get Employee basic details
+WITH EmployeeCTE AS (
+    SELECT 
+        e.EmployeeID,
+        TRIM(CONCAT(e.FirstName, ' ', e.LastName)) AS FullName,
+        e.Department,
+        e.HireDate,
+        e.Salary,
+        ROW_NUMBER() OVER (PARTITION BY e.Department ORDER BY e.HireDate ASC) AS RowNum
+    FROM 
+        Employees e
+    WHERE 
+        e.IsActive = 1
+)
+
+-- Final SELECT with JOIN and additional logic
+SELECT 
+    e.FullName,
+    e.Department,
+    e.Salary,
+    d.ManagerName,
+    EXTRACT(YEAR FROM e.HireDate) AS HireYear,
+    CASE 
+        WHEN e.Salary BETWEEN 50000 AND 80000 THEN 'Mid Level'
+        WHEN e.Salary > 80000 THEN 'Senior Level'
+        ELSE 'Junior Level'
+    END AS SalaryBand,
+    IFNULL(d.Budget, 0) AS DepartmentBudget,
+    DATEDIFF(CURDATE(), e.HireDate) AS DaysEmployed
+FROM 
+    EmployeeCTE e
+INNER JOIN 
+    Departments d ON e.Department = d.DepartmentName
+WHERE 
+    e.Department IN ('Sales', 'HR', 'IT')
+    AND e.Salary IS NOT NULL
+HAVING 
+    COUNT(e.EmployeeID) > 0
+GROUP BY 
+    e.Department, e.FullName, e.Salary, d.ManagerName, e.HireDate, d.Budget
+ORDER BY 
+    e.Department ASC, e.Salary DESC
+
+-- UNION ALL example to combine with terminated employees
+UNION ALL
+
+SELECT 
+    t.FullName,
+    t.Department,
+    t.Salary,
+    'N/A' AS ManagerName,
+    EXTRACT(YEAR FROM t.TerminationDate) AS HireYear,
+    'Terminated' AS SalaryBand,
+    0 AS DepartmentBudget,
+    NULL AS DaysEmployed
+FROM 
+    TerminatedEmployees t
+WHERE 
+    t.TerminationDate BETWEEN DATE('2021-01-01') AND DATE('2023-12-31');
+
+-- Conditional logic outside SELECT (for example, in stored procedure)
+IF @DepartmentFilter = 'Sales'
+BEGIN
+    PRINT 'Filtering for Sales department';
+END
+ELSE
+BEGIN
+    PRINT 'Filtering for All Departments';
+END;
